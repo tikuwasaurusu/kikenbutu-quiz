@@ -230,16 +230,124 @@
             font-size: 14px;
             margin-top: 24px;
         }
+
         #bookmark-button {
             display: block;
-            width:auto;
+            width: auto;
             margin: 0 0 0 auto;
             padding: 6px 14px;
             font-size: 14px;
         }
+
         #bookmark-button.on {
             background-color: var(--accent);
             color: white;
+        }
+
+        /* メニューのグループ(白いカード) */
+        .menu-section {
+            background-color: var(--card);
+            border-radius: 12px;
+            padding: 4px 16px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-title {
+            font-size: 16px;
+            color: var(--accent);
+            margin: 12px 0 8px;
+        }
+
+        /* 2列に並べる */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .grid-2 button {
+            margin: 0;
+        }
+
+        /* グループの中の模擬試験ボタンは、上の余白をなくす */
+        .menu-section #exam-button {
+            margin-top: 0;
+        }
+
+        /* 検索欄とボタンを横に並べる */
+        #search-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        #search-box input {
+            flex: 1;
+        }
+
+        #search-box button {
+            width: auto;
+            margin: 0;
+            padding: 0 18px;
+        }
+
+        /* 一番下の小さいボタン */
+        .menu-footer button {
+            background-color: var(--gray);
+            border-color: var(--line);
+            font-size: 14px;
+            padding: 10px;
+        }
+        .menu-footer {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .stat-card {
+            background-color: var(--card);
+            border-radius: 10px;
+            padding: 12px 4px;
+            text-align: center;
+            font-size: 13px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-num {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .bar-label {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .bar {
+            background-color: var(--gray);
+            border-radius: 6px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            background-color: var(--accent);
+            height: 100%;
+        }
+        .bar-fill.pass {
+            background-color: #2f9e44;
+        }
+
+        .history-item {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 6px 0;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -249,29 +357,80 @@
 
 
     <div id="modes">
-        <label for="select-size">一回の出題数</label>
-        <select id="set-size" onchange="localStorage.setItem(`setSize`, this.value)">
-            <option value="all">全問</option>
-            <option value="5">5問ずつ</option>
-            <option value="10">10問ずつ</option>
-        </select>
-        <button onclick="startMode('all')">全科目</button>
-        <button onclick="startMode('法令')">法令</button>
-        <button onclick="startMode('物化')">物化</button>
-        <button onclick="showRuiSelect()">性消</button>
-        <button id="exam-button" onclick="showExamIntro()">📝 模擬試験(甲種・乙種対応)</button>
-        <button onclick="showScreen(`add-screen`)">問題を追加</button>
-        <button onclick="startBookmarks()">★ ブックマークした問題</button>
-        <button onclick="showScreen(`setting`)">⚙️ 設定</button>
+
+        <section class="menu-section">
+            <h2 class="menu-title">📖 練習</h2>
+            <label for="set-size">1回の出題数</label>
+            <select id="set-size" onchange="localStorage.setItem('setSize', this.value)">
+                <option value="all">全問</option>
+                <option value="5">5問ずつ</option>
+                <option value="10">10問ずつ</option>
+            </select>
+            <div class="grid-2">
+                <button onclick="startMode('all')">全科目</button>
+                <button onclick="startMode('法令')">法令</button>
+                <button onclick="startMode('物化')">物化</button>
+                <button onclick="showRuiSelect()">性消</button>
+            </div>
+        </section>
+
+        <section class="menu-section">
+            <h2 class="menu-title">📝 本番形式</h2>
+            <button id="exam-button" onclick="showExamIntro()">模擬試験(甲種・乙種)</button>
+        </section>
+
+        <section class="menu-section">
+            <h2 class="menu-title">🔁 復習</h2>
+            <button onclick="startBookmarks()">★ ブックマークした問題</button>
+            <div id="search-box">
+                <input id="search-word" placeholder="キーワード(例:ナトリウム)"
+                    onkeydown="if (event.key === 'Enter') startSearch()">
+                <button onclick="startSearch()">🔍</button>
+            </div>
+        </section>
+
+        <div class="grid-2 menu-footer">
+            <button onclick="showStats()">📊 学習記録</button>
+            <button onclick="showAddScreen()">✏️ 自作問題</button>
+            <button onclick="showScreen('settings')">⚙️ 設定</button>
+        </div>
+
     </div>
-    <div id="setting">
+
+    <div id="stats">
+        <h2>学習記録</h2>
+
+        <div class="stat-cards">
+            <div class="stat-card">
+                <div class="stat-num" id="stat-today">0</div>
+                <div>今日解いた問題</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="stat-streak">0</div>
+                <div>連続学習日数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="stat-total">0</div>
+                <div>総回答数</div>
+            </div>
+        </div>
+
+        <h3>科目別の正答率</h3>
+        <div id="stat-subjects"></div>
+
+        <h3>模擬試験の履歴</h3>
+        <div id="stat-history"></div>
+
+        <button onclick="backToMenu()">戻る</button>
+    </div>
+    <div id="settings">
         <h2>設定</h2>
 
         <h3>表示</h3>
         <button id="dark-button" onclick="toggleDark()">🌙 ダークモード</button>
 
         <h3>データ</h3>
-         <button id="reset-button" onclick="resetDecks()">🔄 〇問ずつの進み具合をリセット</button>
+        <button id="reset-button" onclick="resetDecks()">🔄 〇問ずつの進み具合をリセット</button>
 
         <button onclick="backToMenu()">戻る</button>
     </div>
@@ -2609,6 +2768,8 @@
         let progressText = "";
         let remainingCount = 0;
         let bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+        let stats = JSON.parse(localStorage.getItem("stats") || "null") || { days: {}, subjects: {} };
+        
         //問題を画面に表示する
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -2848,7 +3009,7 @@
         }
 
         function showScreen(id) {
-            const screens = ["modes", "quiz-screen", "exam-intro", "rui-select", "add-screen", "my-list", "set-end", "setting"];
+            const screens = ["modes", "quiz-screen", "exam-intro", "rui-select", "add-screen", "my-list", "set-end", "settings", "stats"];
             for (let i = 0; i < screens.length; i++) {
                 if (screens[i] === id) {
                     document.getElementById(screens[i]).style.display = "block";
@@ -2986,7 +3147,7 @@
             }
 
             if (answer >= choices.length) {
-                message.textContent ="正解に選んだ選択肢が入力されていません";
+                message.textContent = "正解に選んだ選択肢が入力されていません";
                 message.style.color = "red";
                 return;
             }
@@ -3022,7 +3183,7 @@
             message.textContent = "保存しました(自作問題:" + myQuizzes.length + "問)";
             message.style.color = "green";
 
-           clearAddForm();
+            clearAddForm();
         }
 
         function backToMenu() {
@@ -3075,6 +3236,119 @@
             beginQuiz();
         }
 
+        function startSearch() {
+            const word = document.getElementById("search-word").value.trim();
+            if (word === "") {
+                alert("検索ワードを入力してください");
+                return;
+            }
+
+            quizzes = allQuizzes.filter(function (quiz) {
+                const text = quiz.question + " " + quiz.choices.join(" ") + " " + quiz.explanation;
+                return text.includes(word);
+            });
+
+            if (quizzes.length === 0) {
+                alert("「" + word + "」を含む問題は見つかりませんでした");
+                return;
+            }
+
+            setInfo = null;
+            isExam = false;
+            progressText = "「" + word + "」の検索結果:" + quizzes.length + "問";
+            beginQuiz();
+        }
+
+        function dayKey(offset) {
+            const d = new Date();
+            d.setDate(d.getDate() - offset);
+            return d.toLocaleDateString("ja-JP");
+        }
+
+        function showStats() {
+            showScreen("stats");
+
+            const subjects = ["法令", "物化", "性消"];
+            let total = 0;
+            for (let i = 0; i < subjects.length; i++) {
+                const s = stats.subjects[subjects[i]];
+                if (s) {
+                    total += s.answered;
+                }
+            }
+            document.getElementById("stat-today").textContent = stats.days[dayKey(0)] || 0;
+            document.getElementById("stat-streak").textContent = getStreak();
+            document.getElementById("stat-total").textContent = total;
+
+            const box = document.getElementById("stat-subjects");
+            box.innerHTML = "";
+            for (let i = 0; i < subjects.length; i++) {
+                const s = stats.subjects[subjects[i]] || {answered: 0, correct: 0 };
+                let rate = 0;
+                if (s.answered > 0) {
+                    rate = Math.round(s.correct / s.answered * 100);
+                }
+                const label = document.createElement("div");
+                label.className = "bar-label";
+                label.textContent = subjects[i] + ":" + rate + "%(" + s.correct + " / " + s.answered + "問)";
+
+                const bar = document.createElement("div");
+                bar.className = "bar";
+                const fill = document.createElement("div");
+                fill.className = "bar-fill";
+                if (rate > 60) {
+                    fill.classList.add("pass");
+                }
+                fill.style.width = rate + "%";
+
+                bar.appendChild(fill);
+                box.appendChild(label);
+                box.appendChild(bar);
+            }
+
+            const history = JSON.parse(localStorage.getItem("examHistory") || "[]");
+            const historyBox = document.getElementById("stat-history");
+            historyBox.innerHTML = "";
+            if (history.length === 0) {
+                historyBox.textContent = "まだ受験記録はありません";
+            }
+            for (let i = history.length -1; i >= 0; i--) {
+                const h = history[i];
+                const item = document.createElement("div");
+                item.className = "history-item";
+                item.textContent = h.date + " " + h.title + " " + h.score + "/" + h.total + (h.pass ? " 合格" : " 不合格");
+                historyBox.appendChild(item);
+            }
+        }
+
+        function recordAnswer(quiz, isCorrect) {
+            const today = dayKey(0);
+            stats.days[today] = (stats.days[today] || 0) + 1;
+
+            if (!stats.subjects[quiz.subject]) {
+                stats.subjects[quiz.subject] = { answered: 0, correct: 0 };
+            }
+            stats.subjects[quiz.subject].answered++;
+            if (isCorrect) {
+                stats.subjects[quiz.subject].correct++;
+            }
+
+            localStorage.setItem("stats", JSON.stringify(stats));
+        }
+
+        function getStreak() {
+            let offset = 0;
+            if (!stats.days[dayKey(0)]) {
+                offset = 1;
+            }
+            let streak = 0;
+            while (stats.days[dayKey(offset)]) {
+                streak++;
+                offset++;
+            }
+            return streak;
+        }
+
         function showQuiz() {
             answered = false;
             const quiz = quizzes[current];
@@ -3121,6 +3395,7 @@
                 result.style.color = "red";
                 wrongQuizzes.push(quiz);
             }
+            recordAnswer(quiz, index === quiz.answer);
             updateScore();
         }
         //次の問題へ
@@ -3189,12 +3464,24 @@
             const now = new Date().toLocaleString("ja-JP");
             const summary = "<p>" + now + "</p>" + text
                 + "<p><b>" + (allPass ? "合格" : "不合格") + "</b></p>";
-            localStorage.setItem("lastExam", summary);
+            localStorage.setItem("examKey", summary);
+            const history = JSON.parse(localStorage.getItem("examHistory") || "[]");
+            history.push({
+                date: now,
+                title: examTitle,
+                score: score,
+                total: quizzes.length,
+                pass: allPass
+            });
+            while (history.length > 20) {
+                history.shift();
+            }
+            localStorage.setItem("examHistory", JSON.stringify(history));
             text += "<h3>間違えた問題(" + wrongQuizzes.length + "問)</h3>";
             if (wrongQuizzes.length === 0) {
                 text += "<p>全問正解です</p>";
             }
-            for (let i = 0; i < wrongQuizzes.length; i++) {
+            for (let i = 0; i < subjects.length; i++) {
                 const s = subjects[i];
                 const wrongs = wrongQuizzes.filter(function (quiz) {
                     return quiz.subject === s;
@@ -3206,7 +3493,7 @@
                 text += "<summary>" + s + "(" + wrongs.length + "問)</summary>";
                 for (let j = 0; j < wrongs.length; j++) {
                     const q = wrongs[j];
-                    text += "<div class=`review`>"
+                    text += "<div class='review'>"
                         + "<p>" + q.question + "</p>"
                         + "<p>正解:" + q.choices[q.answer] + "</p>"
                         + "<p>" + q.explanation + "</p>"
@@ -3214,7 +3501,7 @@
                 }
                 text += "</details>";
             }
-            document.getElementById("question").textContent = "模擬試験 結果";
+            document.getElementById("question").textContent = examTitle + "模擬試験 結果";
             document.getElementById("choices").innerHTML = text;
             document.getElementById("explanation").textContent = "";
             const result = document.getElementById("result");
