@@ -350,6 +350,20 @@
             margin: 6px 0;
             font-size: 14px;
         }
+        #choices button.correct {
+            background-color: #2f9e44;
+            border-color: #2f9e44;
+            color: white;
+            font-weight: bold;
+        }
+        #choices button.wrong {
+            background-color: #e03131;
+            border-color: #e03131;
+            color: white;
+        }
+        #choices button.dimmed {
+            opacity: 0.5;
+        }
     </style>
 </head>
 
@@ -537,7 +551,7 @@
         <p id="result"></p>
         <p id="explanation"></p>
         <div id="controls">
-            <button onclick="next()">次の問題</button>
+            <button id="next-button" onclick="next()">次の問題</button>
             <button onclick="backToMenu()">モード選択</button>
         </div>
     </div>
@@ -1208,6 +1222,26 @@
             return streak;
         }
 
+        function updateNextButton() {
+            const nextButton = document.getElementById("next-button");
+            const isLast = current === quizzes.length -1;
+            const goResult = isLast && (setInfo || isExam);
+
+            if (!answered) {
+                if (goResult) {
+                    nextButton.textContent = "スキップして結果を見る";
+                } else {
+                    nextButton.textContent = "スキップ";
+                } 
+            } else if (goResult) {
+                nextButton.textContent = "結果を見る";
+            } else if (isLast) {
+                nextButton.textContent = "もう一周する";
+            } else {
+                nextButton.textContent = "次の問題";
+            }
+        }
+
         function showQuiz() {
             answered = false;
             const quiz = quizzes[current];
@@ -1229,18 +1263,34 @@
                 const i = order[k];
                 const button = document.createElement("button");
                 button.textContent = quiz.choices[i];
+                button.dataset.index = i;
                 button.onclick = function () {
                     check(i);
                 };
                 choicesDiv.appendChild(button);
             }
             updateBookmarkButton();
+            updateNextButton();
+        
         }
         //答え合わせ
         function check(index) {
             if (answered) return;
             answered = true;
+            updateNextButton();
             const quiz = quizzes[current];
+            const buttons = document.getElementById("choices").children;
+            for (let k = 0; k < buttons.length; k++) {
+                const b = buttons[k];
+                const i = Number(b.dataset.index);
+                if (i === quiz.answer) {
+                    b.classList.add("correct");
+                } else if (i === index) {
+                    b.classList.add("wrong");
+                } else {
+                    b.classList.add("dimmed");
+                }
+            }
             const result = document.getElementById("result");
             const explanation = document.getElementById("explanation");
             explanation.textContent = quiz.explanation;
