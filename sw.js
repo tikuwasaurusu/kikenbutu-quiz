@@ -1,4 +1,4 @@
-const CACHE_NAME = "quiz-v5";
+const CACHE_NAME = "quiz-v6";
 const FILES = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (event) {
@@ -26,7 +26,7 @@ self.addEventListener("activate" , function (event) {
 
 self.addEventListener("fetch",function(event) {
     if (event.request.method !== "GET") return;
-    if (!event.request.url.startsWidth(self.location.origin)) return;
+    if (!event.request.url.startsWith(self.location.origin)) return;
 
     event.respondWith(
         fetch(event.request.url, { cache: "no-cache" })
@@ -39,7 +39,7 @@ self.addEventListener("fetch",function(event) {
         })
         .catch(function () {
             return caches.match(event.request, {ignoreSearch: true }).then(function (cached) {
-                return cached || caches.match("index.HTML");
+                return cached || caches.match("index.html");
             });
         })
     );
