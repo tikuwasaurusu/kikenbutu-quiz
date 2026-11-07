@@ -382,6 +382,7 @@
 
         <section class="menu-section">
             <h2 class="menu-title">🔁 復習</h2>
+            <button id="weak-button" onclick="startWeak()">❌ 間違えた問題</button>
             <button onclick="startBookmarks()">★ ブックマークした問題</button>
             <div id="search-box">
                 <input id="search-word" placeholder="キーワード(例:ナトリウム)"
@@ -545,6 +546,7 @@
         <p id="set-end-score"></p>
         <p id="set-end-progress"></p>
         <div id="set-end-wrongs"></div>
+        <button id="retry-button" onclick="retryWrongs()">❌ 間違えた問題を解き直す</button>
         <button id="set-continue" onclick="continueSet()">続ける</button>
         <button onclick="backToMenu()">モード選択に戻る</button>
     </div>
@@ -574,6 +576,7 @@
         let progressText = "";
         let remainingCount = 0;
         let bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+        let weak = JSON.parse(localStorage.getItem("weak") || "{}");
         let stats = JSON.parse(localStorage.getItem("stats") || "null") || { days: {}, subjects: {} };
         
         //問題を画面に表示する
@@ -704,6 +707,12 @@
 
         function showSetEnd() {
             showScreen("set-end");
+            const retryButton = document.getElementById("retry-button");
+            if (wrongQuizzes.length > 0) {
+                retryButton.style.display = "block";
+            } else {
+                retryButton.style.display = "none";
+            }
 
             document.getElementById("set-end-score").textContent =
                 "正解数" + score + "/" + quizzes.length;
@@ -1142,6 +1151,50 @@
             localStorage.setItem("stats", JSON.stringify(stats));
         }
 
+        function recordWeak(quiz, isCorrect) {
+            const key = quiz.question;
+            if (!isCorrect) {
+                weak[key] = 0;
+            } else if (key in weak) {
+                weak[key]++;
+                if (weak[key] >= 2) {
+                    delete weak[key];
+                }
+            }
+            localStorage.setItem("weak", JSON.stringify(weak));
+            updateWeakButton();
+        }
+
+        function updateWeakButton() {
+            const count = Object.keys(weak).length;
+            document.getElementById("weak-button").textContent = "❌ 間違えた問題(" + count + "問)";
+        }
+
+        function startWeak() {
+            quizzes = allQuizzes.filter(function (quiz) {
+                return quiz.question in weak;
+            });
+            if (quizzes.length === 0) {
+                alert("今は間違えた問題はありません。");
+                return;
+            }
+            setInfo = null;
+            isExam =false;
+            progressText = "２回正解するとリストから外れます";
+            beginQuiz();
+        }
+
+        function retryWrongs() {
+            if (wrongQuizzes.length === 0) {
+                return;
+            }
+            quizzes = wrongQuizzes.slice();
+            setInfo = null;
+            isExam = false;
+            progressText = "今回間違えた問題の解き直し";
+            beginQuiz();
+        }
+
         function getStreak() {
             let offset = 0;
             if (!stats.days[dayKey(0)]) {
@@ -1202,6 +1255,7 @@
                 wrongQuizzes.push(quiz);
             }
             recordAnswer(quiz, index === quiz.answer);
+            recordWeak(quiz, index === quiz.answer);
             updateScore();
         }
         //次の問題へ
@@ -1231,7 +1285,7 @@
             document.body.classList.add("dark");
         }
         updateDarkButton();
-
+        updateWeakButton();
         backToMenu();
         function showExamIntro() {
             showScreen("exam-intro");
@@ -1309,6 +1363,12 @@
             }
             document.getElementById("question").textContent = examTitle + "模擬試験 結果";
             document.getElementById("choices").innerHTML = text;
+            if (wrongQuizzes.length > 0) {
+                const tetry = document.createElement("button");
+                retry.textContent = "❌ 間違えた問題を解き直す";
+                retry.onclick =retryWrongs;
+                document.getElementById("choices").appendChild(retry);
+            }
             document.getElementById("explanation").textContent = "";
             const result = document.getElementById("result");
             if (allPass) {
