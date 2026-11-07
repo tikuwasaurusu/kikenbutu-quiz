@@ -1,0 +1,12 @@
+{
+    "name": "危険物一問一答",
+    "short_name": "危険物",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#f7f5f0",
+    "theme_color": "#e8590c",
+    "icons": [
+        { "src": "icons-192.png", "sizes": "192×192", "type": "image/png" },
+        { "src": "icons-512.png", "sizes": "512×512", "type": "image/png" }
+    ]
+}
