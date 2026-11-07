@@ -25,6 +25,9 @@ self.addEventListener("activate" , function (event) {
 });
 
 self.addEventListener("fetch",function(event) {
+    if (event.request.method !== "GET") return;
+    if (!event.request.url.startsWidth(self.location.origin)) return;
+    
     event.respondWith(
         fetch(event.request.url, { cache: "no-cache" })
         .then(function (response) {
